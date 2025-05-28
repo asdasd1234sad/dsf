@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Texto Simple</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 8px 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #editor {
+            width: 100%;
+            min-height: 400px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        .file-name {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #filename {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex-grow: 1;
+        }
+
+        .status {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #7f8c8d;
+            text-align: right;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            #editor {
+                min-height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Editor de Texto Simple</h1>
+
+        <div class="toolbar">
+            <button id="bold">Negrita</button>
+            <button id="italic">Cursiva</button>
+            <button id="underline">Subrayado</button>
+            <button id="save">Guardar</button>
+            <button id="load">Cargar</button>
+            <button id="clear">Limpiar</button>
+            <button id="print">Imprimir</button>
+            <button id="download">Descargar</button>
+        </div>
+
+        <div contenteditable="true" id="editor" spellcheck="true"></div>
+
+        <div class="file-name">
+            <label for="filename">Nombre del archivo:</label>
+            <input type="text" id="filename" placeholder="mi-documento.txt">
+        </div>
+
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        // Elementos del DOM
+        const editor = document.getElementById('editor');
+        const status = document.getElementById('status');
+        const filenameInput = document.getElementById('filename');
+
+        // Funciones de formato
+        document.getElementById('bold').addEventListener('click', () => {
+            document.execCommand('bold', false, null);
+        });
+
+        document.getElementById('italic').addEventListener('click', () => {
+            document.execCommand('italic', false, null);
+        });
+
+        document.getElementById('underline').addEventListener('click', () => {
+            document.execCommand('underline', false, null);
+        });
+
+        // Guardar en localStorage
+        document.getElementById('save').addEventListener('click', () => {
+            const content = editor.innerHTML;
+            localStorage.setItem('savedText', content);
+            updateStatus('Documento guardado localmente');
+        });
+
+        // Cargar desde localStorage
+        document.getElementById('load').addEventListener('click', () => {
+            const savedText = localStorage.getItem('savedText');
+            if (savedText) {
+                editor.innerHTML = savedText;
+                updateStatus('Documento cargado');
+            } else {
+                updateStatus('No hay documento guardado');
+            }
+        });
+
+        // Limpiar editor
+        document.getElementById('clear').addEventListener('click', () => {
+            editor.innerHTML = '';
+            updateStatus('Editor limpiado');
+        });
+
+        // Imprimir
+        document.getElementById('print').addEventListener('click', () => {
+            window.print();
+        });
+
+        // Descargar como archivo de texto
+        document.getElementById('download').addEventListener('click', () => {
+            const filename = filenameInput.value || 'documento.txt';
+            const text = editor.innerText;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                updateStatus(`Documento descargado como ${filename}`);
+            }, 100);
+        });
+
+        // Actualizar estado
+        function updateStatus(message) {
+            status.textContent = message;
+            setTimeout(() => {
+                status.textContent = '';
+            }, 3000);
+        }
+
+        // Cargar texto guardado al iniciar (si existe)
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedText = localStorage.getItem('savedText');
+            if (savedText) {
+                editor.innerHTML = savedText;
+            }
+        });
+    </script>
+</body>
+
+</html>
